@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func print(args ...interface{}) []string {
+func Print(args ...interface{}) []string {
 	for i := range args {
 		fmt.Printf("%v ", args[i])
 	}
