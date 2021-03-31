@@ -1,14 +1,12 @@
-package universe
+package u
 
 import (
 	"fmt"
 )
 
-func Print(args ...interface{}) []string {
+func Print(args ...interface{}) {
 	for i := range args {
 		fmt.Printf("%v ", args[i])
 	}
 	fmt.Println("")
-	var a []string
-	return a
 }
