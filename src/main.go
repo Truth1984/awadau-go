@@ -1,6 +1,10 @@
 package main
 
-import u "github.com/Truth1984/awadau-go"
+import (
+	"time"
+
+	u "github.com/Truth1984/awadau-go"
+)
 
 type Foo struct {
 	Bar []string
@@ -8,7 +12,7 @@ type Foo struct {
 }
 
 func main() {
-	s := [5]int{1, 2, 3, 4, 5}
+	s := [8]int{1, 2, 3, 4, 5}
 	u.Print(u.Types(s))
 
 	v := map[string]int{
@@ -21,13 +25,15 @@ func main() {
 		"s": "str",
 	}
 
+	time := time.Now()
+
 	u.Print(v)
 
 	u.Print(u.TypesCheck(s, "string"))
 
-	u.Print(u.Types(v))
+	u.Print(u.Types(time))
 
-	u.Print(v2)
+	u.Print(len(s))
 
 	u.Print(u.Types(v2["s"]))
 
