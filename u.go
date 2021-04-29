@@ -73,10 +73,6 @@ func TypesCheck(source interface{}, expect string) bool {
 	return strings.Contains(stype, expect)
 }
 
-func Contains(source interface{}, target interface{}) bool {
-	return false
-}
-
 func dateLayout(str string) string {
 	switch str {
 		case "plain":
