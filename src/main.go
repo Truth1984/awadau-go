@@ -1,14 +1,17 @@
 package main
 
 import (
-	"time"
-
 	u "github.com/Truth1984/awadau-go"
 )
 
 type Foo struct {
 	Bar []string
 	Baz int
+}
+
+func vvfunc(args ...interface{}) []interface{} {
+	u.Print(u.Types(args), args)
+	return args
 }
 
 func main() {
@@ -25,15 +28,16 @@ func main() {
 		"s": "str",
 	}
 
-	time := time.Now()
-
 	u.Print(v)
 
-	u.Print(u.TypesCheck(s, "string"))
+	vvargs := vvfunc("1", 3, 6, "ds")
+	u.Print(u.CP2M(vvargs)[0].(string))
 
-	u.Print(u.Types(time))
+	u.Print(u.Date("2021-04-28 15:50:04.593 +0800 CST"))
 
-	u.Print(len(s))
+	u.Print(u.Date(v2), "maptest")
+
+	u.Print(u.DateFormat("ANSIC"))
 
 	u.Print(u.Types(v2["s"]))
 
