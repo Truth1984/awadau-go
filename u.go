@@ -71,6 +71,7 @@ func TypesCheck(source interface{}, expect string) bool {
 		case "date","time":
 			return stype == "Time"
 		}
+		
 	return strings.Contains(stype, expect)
 }
 
@@ -189,7 +190,7 @@ func DateFormat(formatThenDate ...interface{}) string {
 	args := CP2M(formatThenDate)
 	format := dateLayout((args[0]).(string))
 	dates := time.Now()
-	if(args[1] != nil) {
+	if args[1] != nil {
 		dates = Date(args[1])
 	}
 
@@ -223,7 +224,7 @@ func MapValues(aSet map[string]interface{}) []interface{} {
 func MapGetExist(aSet map[string]interface{}, keys...string) map[string]interface{} {
 	aMap := make(map[string]interface{})
 	for _ , v := range keys {
-		if(aSet[v] != nil) {
+		if aSet[v] != nil {
 			aMap[v] = aSet[v]
 		}
 	}
@@ -239,17 +240,17 @@ func MapGetPath(aSet map[string]interface{}, patharrThenFallback ...interface{})
 	patf := CP2M(patharrThenFallback)
 	patharr := patf[0].([]string)
 	var fallback interface{}
-	if(patf[1] != nil) {
+	if patf[1] != nil {
 		fallback = patf[1]
 	}
 
 	value := aSet
 	for _, v := range patharr {		
-			if(MapHas(value , v) && TypesCheck(value[v],"map")){
-				value = value[v].(map[string]interface{})
-			}else {
-				return fallback
-			}		
+		if MapHas(value , v) && TypesCheck(value[v],"map") {
+			value = value[v].(map[string]interface{})
+		}else {
+			return fallback
+		}		
 	}
 
 	return value
