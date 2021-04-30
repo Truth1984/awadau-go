@@ -35,6 +35,7 @@ func CP2M(array []interface{}) map[int]interface{} {
 	return aMap
 }
 
+// trueValue or falseValue must exist / not panic
 func Ternary(boolean bool, trueValue interface{}, falseValue interface{}) interface{} {
 	if boolean {
 		return trueValue
@@ -193,4 +194,63 @@ func DateFormat(formatThenDate ...interface{}) string {
 	}
 
 	return dates.Format(format)
+}
+
+func MapGet(aSet map[string]interface{}, keys ...string) map[string]interface{} {
+	aMap := make(map[string]interface{})
+	for _ , v := range keys {
+		aMap[v] = aSet[v]
+	}
+	return aMap
+}
+
+func MapKeys(aSet map[string]interface{}) []string {
+	keys := make([]string, 0, len(aSet))
+    for k := range aSet {
+        keys = append(keys, k)
+    }
+	return keys
+}
+
+func MapValues(aSet map[string]interface{}) []interface{} {
+	values := make([]interface{}, 0, len(aSet))
+	for v := range aSet {
+        values = append(values, aSet[v])
+    }
+	return values
+}
+
+func MapGetExist(aSet map[string]interface{}, keys...string) map[string]interface{} {
+	aMap := make(map[string]interface{})
+	for _ , v := range keys {
+		if(aSet[v] != nil) {
+			aMap[v] = aSet[v]
+		}
+	}
+	return aMap
+}
+
+func MapHas(aSet map[string]interface{}, key string) bool {
+	return aSet[key] != nil
+}
+
+// fallback = interface{}
+func MapGetPath(aSet map[string]interface{}, patharrThenFallback ...interface{}) interface{} {
+	patf := CP2M(patharrThenFallback)
+	patharr := patf[0].([]string)
+	var fallback interface{}
+	if(patf[1] != nil) {
+		fallback = patf[1]
+	}
+
+	value := aSet
+	for _, v := range patharr {		
+			if(MapHas(value , v) && TypesCheck(value[v],"map")){
+				value = value[v].(map[string]interface{})
+			}else {
+				return fallback
+			}		
+	}
+
+	return value
 }

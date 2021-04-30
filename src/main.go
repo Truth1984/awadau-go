@@ -28,6 +28,14 @@ func main() {
 		"s": "str",
 	}
 
+	v3 := map[string]interface{}{
+		"ds": v2,
+	}
+
+	v4 := map[string]interface{}{
+		"df": v3,
+	}
+
 	u.Print(v)
 
 	vvargs := vvfunc("1", 3, 6, "ds")
@@ -38,6 +46,11 @@ func main() {
 	u.Print(u.Date(v2), "maptest")
 
 	u.Print(u.DateFormat("ANSIC"))
+
+	u.Print("values", u.MapGetExist(v2, "d", "f"))
+
+	ps := []string{"df", "ds", "p", "c"}
+	u.Print("path", u.MapGetPath(v4, ps))
 
 	u.Print(u.Types(v2["s"]))
 
