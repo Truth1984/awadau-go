@@ -26,6 +26,26 @@ func ArrayToMap(array []interface{}) map[int]interface{} {
 	return aMap
 }
 
+func ToString(item interface{}) string {
+	return fmt.Sprint(item)
+}
+
+// sep = ","
+func ArrayToString(arrayThenSep ...interface{}) string {
+	ats := CP2M(arrayThenSep)
+	array := arrayThenSep[0].([]interface{})
+	sep := ","
+	if (ats[1] != nil) {
+		sep = ats[1].(string)
+	}
+
+	result := ""
+	for i := 0; i < len(array); i++ { 
+		result += ToString(array[i]) + sep
+	}
+	return strings.TrimSuffix(result,sep)
+}
+
 func CP2M(array []interface{}) map[int]interface{} {
 	arr := reflect.ValueOf(array)
 	aMap := map[int]interface{}{}
@@ -71,7 +91,7 @@ func TypesCheck(source interface{}, expect string) bool {
 		case "date","time":
 			return stype == "Time"
 		}
-		
+
 	return strings.Contains(stype, expect)
 }
 
