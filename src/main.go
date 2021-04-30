@@ -56,7 +56,7 @@ func main() {
 	u.Print("ats", u.ArrayToString(ps2, "-"))
 
 	jstring := "{\"data\":{\"base\":\"BTC\",\"currency\":\"USD\",\"amount\":40000.48}}"
-	jmap := u.StringToJson(jstring)
+	jmap, _ := u.StringToJson(jstring)
 
 	psjmap := []interface{}{"data", "amounts"}
 

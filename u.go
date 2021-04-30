@@ -318,16 +318,17 @@ func JsonToString(aSetThenSpace ...interface{}) (string, error) {
 	return string(bytes), nil
 }
 
-func StringToJson(str string) map[string]interface{} {
+func StringToJson(str string) (map[string]interface{} ,error) {
     rawIn := json.RawMessage(str)
     bytes, err := rawIn.MarshalJSON()
+	empty := make(map[string]interface{})
     if err != nil {
-        panic(err)
+        return empty , err
     }
 	var result map[string]interface{}
     err  = json.Unmarshal(bytes, &result)
     if err != nil {
-        panic(err)
+		return empty , err
     }
-	return result
+	return result, nil
 }
