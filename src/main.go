@@ -1,8 +1,6 @@
 package main
 
-import (
-	u "github.com/Truth1984/awadau-go"
-)
+import u "github.com/Truth1984/awadau-go"
 
 type Foo struct {
 	Bar []string
