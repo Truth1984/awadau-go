@@ -1,6 +1,7 @@
 package u
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -24,6 +25,24 @@ func ArrayToMap(array []interface{}) map[int]interface{} {
 		aMap[i] = array[i]
 	}
 	return aMap
+}
+
+func ArrayPopRight(array *[]interface{}) interface{} {
+	if(len(*array) == 0) {
+		return nil
+	}
+	pop := (*array)[len(*array)-1]
+	(*array) = (*array)[:len(*array)-1]
+	return pop
+}
+
+func ArrayPopLeft(array *[]interface{}) interface{} {
+	if(len(*array) == 0) {
+		return nil
+	}
+	shift := (*array)[0]
+	(*array) = (*array)[1:]
+	return shift
 }
 
 func ToString(item interface{}) string {
@@ -258,20 +277,57 @@ func MapHas(aSet map[string]interface{}, key string) bool {
 // fallback = interface{}
 func MapGetPath(aSet map[string]interface{}, patharrThenFallback ...interface{}) interface{} {
 	patf := CP2M(patharrThenFallback)
-	patharr := patf[0].([]string)
+	patharr := patf[0].([]interface{})
 	var fallback interface{}
 	if patf[1] != nil {
 		fallback = patf[1]
 	}
 
+	last := ArrayPopRight(&patharr)
 	value := aSet
-	for _, v := range patharr {		
-		if MapHas(value , v) && TypesCheck(value[v],"map") {
-			value = value[v].(map[string]interface{})
-		}else {
-			return fallback
-		}		
+	for _, v := range patharr{	
+		va:= v.(string)
+			if MapHas(value , va) && TypesCheck(value[va],"map") {
+				value = value[va].(map[string]interface{})
+			}else {
+				return fallback
+			}	
 	}
 
-	return value
+	if MapHas(value, last.(string)) {
+		return value[last.(string)]
+	} else {
+		return fallback
+	}
+}
+
+// space = "\t"
+func JsonToString(aSetThenSpace ...interface{}) (string, error) {
+	sts := CP2M(aSetThenSpace)
+	aSet := sts[0].(map[string]interface{})
+	space := "\t"
+	if sts[1] != nil {
+		space = sts[1].(string)
+	}
+
+	bytes, err := json.MarshalIndent(aSet,"",space)
+    if err != nil {
+        return "" , err
+    }
+
+	return string(bytes), nil
+}
+
+func StringToJson(str string) map[string]interface{} {
+    rawIn := json.RawMessage(str)
+    bytes, err := rawIn.MarshalJSON()
+    if err != nil {
+        panic(err)
+    }
+	var result map[string]interface{}
+    err  = json.Unmarshal(bytes, &result)
+    if err != nil {
+        panic(err)
+    }
+	return result
 }

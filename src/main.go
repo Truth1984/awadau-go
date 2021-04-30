@@ -49,11 +49,21 @@ func main() {
 
 	u.Print("values", u.MapGetExist(v2, "d", "f"))
 
-	ps := []string{"df", "ds", "p", "c"}
+	ps := []interface{}{"df", "ds", "p", "c"}
 	ps2 := []interface{}{"dd", "21", 15}
 	u.Print("path", u.MapGetPath(v4, ps))
 
 	u.Print("ats", u.ArrayToString(ps2, "-"))
+
+	jstring := "{\"data\":{\"base\":\"BTC\",\"currency\":\"USD\",\"amount\":40000.48}}"
+	jmap := u.StringToJson(jstring)
+
+	psjmap := []interface{}{"data", "amounts"}
+
+	u.Print(jmap, u.MapGetPath(jmap, psjmap))
+
+	jsvalue, _ := u.JsonToString(v3)
+	u.Print("v3", jsvalue)
 
 	u.Print(u.Types(v2["s"]))
 
