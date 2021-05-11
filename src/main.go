@@ -22,14 +22,16 @@ func main() {
 	}
 
 	v2 := map[string]interface{}{
-		"d":     32,
-		"s":     "str",
-		"year":  2,
-		"month": 3,
+		"d":      32,
+		"s":      "str",
+		"year":   2,
+		"month":  3,
+		"minute": -5,
 	}
 
 	v3 := map[string]interface{}{
-		"ds": v2,
+		"year": 2018,
+		"ds":   v2,
 	}
 
 	v4 := map[string]interface{}{
@@ -45,7 +47,7 @@ func main() {
 
 	u.Print("DA", u.DateAdd(v2))
 
-	u.Print(u.Date(v2), "maptest")
+	u.Print(u.Date(v3), "maptest")
 
 	u.Print(u.DateFormat("ANSIC"))
 
@@ -69,4 +71,8 @@ func main() {
 
 	u.Print(u.Types(v2["s"]))
 
+	u.Print("extract", u.ArrayExtract(u.ATI(s), 6))
+	// u.Print(u.ATI(s))
+
+	u.Print("mti", u.MTI(v))
 }

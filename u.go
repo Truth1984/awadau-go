@@ -19,6 +19,27 @@ func Print(args ...interface{}) {
 	fmt.Println("")
 }
 
+// array to interface
+func ATI(array interface{}) []interface{} {
+	slice := reflect.ValueOf(array)
+	result := make([]interface{}, slice.Len())
+	for i := 0; i < slice.Len(); i++ {
+        result[i] = slice.Index(i).Interface()
+    }
+	return result	
+}
+
+// map to interface
+func MTI(amap interface{}) map[string]interface{} {
+	dict := reflect.ValueOf(amap)
+	result := make(map[string]interface{})
+	iter := dict.MapRange()
+	for iter.Next() {
+	  result [ToString(iter.Key())] = iter.Value().Interface()
+	}
+	return result
+}
+
 func ArrayToMap(array []interface{}) map[int]interface{} {
 	aMap := make(map[int]interface{})
 	for i := 0; i < len(array); i++ {
@@ -43,6 +64,18 @@ func ArrayPopLeft(array *[]interface{}) interface{} {
 	shift := (*array)[0]
 	(*array) = (*array)[1:]
 	return shift
+}
+
+// END = length
+func ArrayExtract(array []interface{}, startThenEnd ...interface{}) []interface{} {
+	args := CP2M(startThenEnd)
+	start := args[0].(int)
+	end := len(array)
+	if args[1] != nil {
+		end = args[1].(int)
+	}
+	
+	return array[start:end]
 }
 
 func ToString(item interface{}) string {
