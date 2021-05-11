@@ -22,8 +22,10 @@ func main() {
 	}
 
 	v2 := map[string]interface{}{
-		"d": 32,
-		"s": "str",
+		"d":     32,
+		"s":     "str",
+		"year":  2,
+		"month": 3,
 	}
 
 	v3 := map[string]interface{}{
@@ -40,6 +42,8 @@ func main() {
 	u.Print(u.CP2M(vvargs)[0].(string))
 
 	u.Print(u.Date("2021-04-28 15:50:04.593 +0800 CST"))
+
+	u.Print("DA", u.DateAdd(v2))
 
 	u.Print(u.Date(v2), "maptest")
 

@@ -65,6 +65,7 @@ func ArrayToString(arrayThenSep ...interface{}) string {
 	return strings.TrimSuffix(result,sep)
 }
 
+// Change Param To Map, implementation of kwargs
 func CP2M(array []interface{}) map[int]interface{} {
 	arr := reflect.ValueOf(array)
 	aMap := map[int]interface{}{}
@@ -90,7 +91,7 @@ func Types(source interface{}) string {
 	return types
 }
 
-// @param { "num" } expect
+// expect : str | string | num | number | int | float | arr | array | map | dict | date | time
 func TypesCheck(source interface{}, expect string) bool {
 	stype := Types(source)
 
@@ -171,27 +172,27 @@ func Date(input interface{}) time.Time {
 	if TypesCheck(input, "array") {
 		tm := ArrayToMap(input.([]interface{}))
 		year := Ternary(tm[0] == nil, time.Now().Year(), tm[0]).(int)
-		month:= Ternary(tm[1] == nil, time.Now(), tm[1]).(time.Time).Month()
+		month:= Ternary(tm[1] == nil, int(time.Now().Month()), tm[1]).(int)
 		day:= Ternary(tm[2] == nil, time.Now().Day(), tm[2]).(int)
 		hour:= Ternary(tm[3] == nil, time.Now().Hour(), tm[3]).(int)
 		minute:= Ternary(tm[4] == nil, time.Now().Minute(), tm[4]).(int)
 		second:= Ternary(tm[5] == nil, time.Now().Second(), tm[5]).(int)
 		nanosecond := Ternary(tm[6] == nil, time.Now().Nanosecond(), tm[6]).(int)
 		loc := Ternary(tm[7] == nil, time.Now().Location(), tm[7]).(*time.Location)
-		return time.Date(year,month,day,hour,minute,second,nanosecond,loc)
+		return time.Date(year,time.Month(month),day,hour,minute,second,nanosecond,loc)
 	}
 
 	if TypesCheck(input, "map") {
 		tm := input.(map[string] interface{})
 		year := Ternary(tm["year"] == nil, time.Now().Year(), tm["year"]).(int)
-		month:= Ternary(tm["month"] == nil, time.Now(), tm["month"]).(time.Time).Month()
+		month:= Ternary(tm["month"] == nil, int(time.Now().Month()), tm["month"]).(int)
 		day:= Ternary(tm["day"] == nil, time.Now().Day(), tm["day"]).(int)
 		hour:= Ternary(tm["hour"] == nil, time.Now().Hour(), tm["hour"]).(int)
 		minute:= Ternary(tm["minute"] == nil, time.Now().Minute(), tm["minute"]).(int)
 		second:= Ternary(tm["second"] == nil, time.Now().Second(), tm["second"]).(int)
 		nanosecond := Ternary(tm["nanosecond"] == nil, time.Now().Nanosecond(), tm["nanosecond"]).(int)
 		loc := Ternary(tm["loc"] == nil, time.Now().Location(), tm["loc"]).(*time.Location)
-		return time.Date(year,month,day,hour,minute,second,nanosecond,loc)
+		return time.Date(year,time.Month(month),day,hour,minute,second,nanosecond,loc)
 	}
 	
 	if TypesCheck(input, "str") {
@@ -234,6 +235,32 @@ func DateFormat(formatThenDate ...interface{}) string {
 	}
 
 	return dates.Format(format)
+}
+
+// diff : map[string]interface{} key: year?, month?, day?, hour?, minute?, second?, nanosecond?
+//
+// Date: time.Time, default to now
+func DateAdd(diffThenDate ...interface{}) time.Time {
+	args := CP2M(diffThenDate)
+	diff := (args[0]).(map[string]interface{})
+	date := time.Now()
+	if args[1] != nil {
+		date = args[1].(time.Time)
+	}
+
+	diff["year"] = Ternary(diff["year"] != nil, diff["year"], 0)
+	diff["month"] = Ternary(diff["month"] != nil, diff["month"], 0)
+	diff["day"] = Ternary(diff["day"] != nil, diff["day"], 0)
+	diff["hour"] = Ternary(diff["hour"] != nil, diff["hour"], 0)
+	diff["minute"] = Ternary(diff["minute"] != nil, diff["minute"], 0)
+	diff["second"] = Ternary(diff["second"] != nil, diff["second"], 0)
+	diff["nanosecond"] = Ternary(diff["nanosecond"] != nil, diff["nanosecond"], 0)
+
+	return date.Local().AddDate(diff["year"].(int),diff["month"].(int),diff["day"].(int)).Add(
+		time.Hour * time.Duration(diff["hour"].(int)) +
+		time.Minute * time.Duration(diff["minute"].(int)) +
+		time.Second * time.Duration(diff["second"].(int)) + 
+		time.Nanosecond * time.Duration(diff["nanosecond"].(int)))
 }
 
 func MapGet(aSet map[string]interface{}, keys ...string) map[string]interface{} {
@@ -287,11 +314,11 @@ func MapGetPath(aSet map[string]interface{}, patharrThenFallback ...interface{})
 	value := aSet
 	for _, v := range patharr{	
 		va:= v.(string)
-			if MapHas(value , va) && TypesCheck(value[va],"map") {
-				value = value[va].(map[string]interface{})
-			}else {
-				return fallback
-			}	
+		if MapHas(value , va) && TypesCheck(value[va],"map") {
+			value = value[va].(map[string]interface{})
+		}else {
+			return fallback
+		}	
 	}
 
 	if MapHas(value, last.(string)) {
