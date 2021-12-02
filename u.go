@@ -41,6 +41,25 @@ func ATI(array interface{}) []interface{} {
 	return result
 }
 
+func ToFloat64(item interface{}) float64 {
+	switch Types(item) {
+	case "float64":
+		return item.(float64)
+	case "int":
+		return float64(item.(int))
+	case "int64":
+		return float64(item.(int64))
+	case "string":
+		f, _ := strconv.ParseFloat(item.(string), 64)
+		return f
+	}
+	return 0
+}
+
+func ToInt(item interface{}) int {
+	return int(ToFloat64(item))
+}
+
 // map to interface
 func MTI(amap interface{}) map[string]interface{} {
 	dict := reflect.ValueOf(amap)
