@@ -1,9 +1,21 @@
 package u
 
 import (
+	"bytes"
+	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"math/rand"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
 	"reflect"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -55,6 +67,10 @@ func Map(keyThenValue ...interface{}) map[string]interface{} {
 	return aMap
 }
 
+func ArrayAdd(item ...interface{}) []interface{} {
+	return append(item[:0:0], item...)
+}
+
 func ArrayToMap(array []interface{}) map[int]interface{} {
 	aMap := make(map[int]interface{})
 	for i := 0; i < len(array); i++ {
@@ -91,6 +107,18 @@ func ArrayExtract(array []interface{}, startThenEnd ...interface{}) []interface{
 	}
 
 	return array[start:end]
+}
+
+func ArrayEqual(a, b []interface{}) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func ToString(item interface{}) string {
@@ -374,6 +402,56 @@ func MapGetPath(aSet map[string]interface{}, patharrThenFallback ...interface{})
 	}
 }
 
+func MapMerge(sets ...map[string]interface{}) map[string]interface{} {
+	aMap := make(map[string]interface{})
+	for _, v := range sets {
+		for k, vv := range v {
+			aMap[k] = vv
+		}
+	}
+	return aMap
+}
+
+func MapMergeDeep(sets ...map[string]interface{}) map[string]interface{} {
+	aMap := make(map[string]interface{})
+	for _, v := range sets {
+		for k, vv := range v {
+			if TypesCheck(aMap[k], "map") && TypesCheck(vv, "map") {
+				aMap[k] = MapMergeDeep(aMap[k].(map[string]interface{}), vv.(map[string]interface{}))
+			} else {
+				aMap[k] = vv
+			}
+		}
+	}
+	return aMap
+}
+
+func MapEqual(a, b map[string]interface{}) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func Serialize(aMap map[string]interface{}) string {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(aMap)
+	if err != nil {
+		panic(err)
+	}
+	return buf.String()
+}
+
+func Deserialize(aString string) map[string]interface{} {
+	var buf bytes.Buffer
+	buf.WriteString(aString)
+	dec := gob.NewDecoder(&buf)
+	var aMap map[string]interface{}
+	err := dec.Decode(&aMap)
+	if err != nil {
+		panic(err)
+	}
+	return aMap
+}
+
 // space = "\t"
 func JsonToString(aSetThenSpace ...interface{}) (string, error) {
 	sts := CP2M(aSetThenSpace)
@@ -404,4 +482,220 @@ func StringToJson(str string) (map[string]interface{}, error) {
 		return empty, err
 	}
 	return result, nil
+}
+
+func StringContains(str string, substr string) bool {
+	return strings.Contains(str, substr)
+}
+
+func StringReplace(str string, repl map[string]string, recursive bool) string {
+	times := Ternary(recursive, -1, 1).(int)
+	for k, v := range repl {
+		str = strings.Replace(str, k, v, times)
+	}
+	return str
+}
+
+// use `` instead of // for regex
+func ReFind(str string, pattern string) string {
+	re := regexp.MustCompile(pattern)
+	return re.FindString(str)
+}
+
+func ReHas(str string, pattern string) bool {
+	re := regexp.MustCompile(pattern)
+	return re.MatchString(str)
+}
+
+func ReFindAll(str string, pattern string) []string {
+	re := regexp.MustCompile(pattern)
+	return re.FindAllString(str, -1)
+}
+
+func ReSub(str string, pattern string, repl string) string {
+	re := regexp.MustCompile(pattern)
+	return re.ReplaceAllString(str, repl)
+}
+
+func ReSubMap(str string, pattern string, repl map[string]interface{}) string {
+	re := regexp.MustCompile(pattern)
+	return re.ReplaceAllStringFunc(str, func(s string) string {
+		return repl[s].(string)
+	})
+}
+
+func Password(length int, strong bool) string {
+	var charset = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	if strong {
+		charset = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+{}[]|\\:;'<>,.?/")
+	}
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+func Url(url string) string {
+	if ReHas(url, `^localhost`) {
+		return "http://" + url
+	}
+	if url == "about:blank" {
+		return url
+	}
+	if ReHas(url, `^www\.`) {
+		return "https://" + url
+	}
+	if ReHas(url, `^http`) {
+		return url
+	}
+	if ReHas(url, `^\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b`) {
+		return "http://" + url
+	}
+	return "https://www." + url
+}
+
+func Fetch(url string, method string, header map[string]interface{}, data map[string]interface{}) (string, error) {
+	var client = &http.Client{}
+	url = Url(url)
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+	var rBody io.Reader = nil
+	if method != "GET" {
+		rBody = bytes.NewReader(jsonBytes)
+	}
+	req, err := http.NewRequest(method, url, rBody)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36")
+
+	for k, v := range header {
+		req.Header.Set(k, v.(string))
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode >= 400 {
+		err := Map("status", resp.StatusCode, "body", string(body), "url", url, "method", method, "header", req.Header)
+		result, _ := JsonToString(err)
+		return string(body), errors.New(result)
+	}
+
+	return string(body), nil
+}
+
+func FetchGet(url string, header map[string]interface{}) (string, error) {
+	return Fetch(url, "GET", header, nil)
+}
+
+func FetchPost(url string, data map[string]interface{}, header map[string]interface{}) (string, error) {
+	return Fetch(url, "POST", header, data)
+}
+
+func FetchUploadFile(url string, files map[string]interface{}, body map[string]interface{}, header map[string]interface{}) (string, error) {
+	var client = &http.Client{}
+	url = Url(url)
+	jsonBytes, err := json.Marshal(body)
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36")
+
+	for k, v := range header {
+		req.Header.Set(k, v.(string))
+	}
+
+	// multipart form
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+
+	for k, v := range body {
+		bodyWriter.WriteField(k, v.(string))
+	}
+
+	for k, v := range files {
+		f, err := os.Open(v.(string))
+		if err != nil {
+			return "", err
+		}
+		defer f.Close()
+
+		fileWriter, err := bodyWriter.CreateFormFile(k, filepath.Base(v.(string)))
+		if err != nil {
+			return "", err
+		}
+
+		_, err = io.Copy(fileWriter, f)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	contentType := bodyWriter.FormDataContentType()
+	bodyWriter.Close()
+
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Content-Length", strconv.Itoa(bodyBuf.Len()))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	resbody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode >= 400 {
+		err := Map("status", resp.StatusCode, "body", string(resbody), "url", url, "header", req.Header)
+		result, _ := JsonToString(err)
+		return string(resbody), errors.New(result)
+	}
+
+	return string(resbody), nil
+}
+
+// use global variable to pass data
+func Retry(fn func() error, retryCount int) error {
+	var err error
+
+	for i := 0; i < retryCount; i++ {
+		err = fn()
+		if err == nil {
+			return nil
+		}
+
+		time.Sleep(time.Second * 2)
+	}
+	return err
+}
+
+func RetryEH(fn func() error, retryCount int, eh func(error)) error {
+	var err error
+
+	for i := 0; i < retryCount; i++ {
+		err = fn()
+		if err == nil {
+			return nil
+		}
+
+		eh(err)
+		time.Sleep(time.Second * 2)
+	}
+	return err
 }
