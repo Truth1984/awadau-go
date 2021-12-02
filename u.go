@@ -24,9 +24,9 @@ func ATI(array interface{}) []interface{} {
 	slice := reflect.ValueOf(array)
 	result := make([]interface{}, slice.Len())
 	for i := 0; i < slice.Len(); i++ {
-        result[i] = slice.Index(i).Interface()
-    }
-	return result	
+		result[i] = slice.Index(i).Interface()
+	}
+	return result
 }
 
 // map to interface
@@ -35,9 +35,21 @@ func MTI(amap interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
 	iter := dict.MapRange()
 	for iter.Next() {
-	  result [ToString(iter.Key())] = iter.Value().Interface()
+		result[ToString(iter.Key())] = iter.Value().Interface()
 	}
 	return result
+}
+
+func Array(item ...interface{}) []interface{} {
+	return item
+}
+
+func Map(keyThenValue ...interface{}) map[string]interface{} {
+	aMap := make(map[string]interface{})
+	for i := 0; i < len(keyThenValue); i += 2 {
+		aMap[ToString(keyThenValue[i])] = keyThenValue[i+1]
+	}
+	return aMap
 }
 
 func ArrayToMap(array []interface{}) map[int]interface{} {
@@ -49,7 +61,7 @@ func ArrayToMap(array []interface{}) map[int]interface{} {
 }
 
 func ArrayPopRight(array *[]interface{}) interface{} {
-	if(len(*array) == 0) {
+	if len(*array) == 0 {
 		return nil
 	}
 	pop := (*array)[len(*array)-1]
@@ -58,7 +70,7 @@ func ArrayPopRight(array *[]interface{}) interface{} {
 }
 
 func ArrayPopLeft(array *[]interface{}) interface{} {
-	if(len(*array) == 0) {
+	if len(*array) == 0 {
 		return nil
 	}
 	shift := (*array)[0]
@@ -74,7 +86,7 @@ func ArrayExtract(array []interface{}, startThenEnd ...interface{}) []interface{
 	if args[1] != nil {
 		end = args[1].(int)
 	}
-	
+
 	return array[start:end]
 }
 
@@ -87,15 +99,15 @@ func ArrayToString(arrayThenSep ...interface{}) string {
 	ats := CP2M(arrayThenSep)
 	array := arrayThenSep[0].([]interface{})
 	sep := ","
-	if (ats[1] != nil) {
+	if ats[1] != nil {
 		sep = ats[1].(string)
 	}
 
 	result := ""
-	for i := 0; i < len(array); i++ { 
+	for i := 0; i < len(array); i++ {
 		result += ToString(array[i]) + sep
 	}
-	return strings.TrimSuffix(result,sep)
+	return strings.TrimSuffix(result, sep)
 }
 
 // Change Param To Map, implementation of kwargs
@@ -129,58 +141,57 @@ func TypesCheck(source interface{}, expect string) bool {
 	stype := Types(source)
 
 	switch strings.ToLower(expect) {
-		case "str","string":
-			return stype == "string"
-		case "num","number":
-			return strings.Contains(stype, "int") || strings.Contains(stype, "float")
-		case "int":
-			return strings.Contains(stype, "int")
-		case "float":
-			return strings.Contains(stype, "float")
-		case "arr","array":
-			return stype == "array"
-		case "map","dict":
-			return stype == "map"
-		case "date","time":
-			return stype == "Time"
-		}
+	case "str", "string":
+		return stype == "string"
+	case "num", "number":
+		return strings.Contains(stype, "int") || strings.Contains(stype, "float")
+	case "int":
+		return strings.Contains(stype, "int")
+	case "float":
+		return strings.Contains(stype, "float")
+	case "arr", "array":
+		return stype == "array"
+	case "map", "dict":
+		return stype == "map"
+	case "date", "time":
+		return stype == "Time"
+	}
 
 	return strings.Contains(stype, expect)
 }
 
 func dateLayout(str string) string {
 	switch str {
-		case "plain":
-			return "2020-04-09-06-05-45"
-		case "ANSIC":
-			return "Mon Jan _2 15:04:05 2006" 
-		case "UnixDate":
-			return "Mon Jan _2 15:04:05 MST 2006"
-		case "RubyDate":
-			return "Mon Jan 02 15:04:05 -0700 2006"
-		case "RFC822":
-			return "02 Jan 06 15:04 MST"
-		case "RFC822Z":
-			return "02 Jan 06 15:04 -0700"
-		case "RFC850":
-			return "Monday, 02-Jan-06 15:04:05 MST"
-		case "RFC1123":
-			return "Mon, 02 Jan 2006 15:04:05 MST"
-		case "RFC1123Z":
-			return "Mon, 02 Jan 2006 15:04:05 -0700"
-		case "RFC3339":
-			return "2006-01-02T15:04:05Z07:00"
-		case "RFC3339Nano":
-			return "2006-01-02T15:04:05.999999999Z07:00"
-		case "Kitchen":
-			return "3:04PM"
+	case "plain":
+		return "2020-04-09-06-05-45"
+	case "ANSIC":
+		return "Mon Jan _2 15:04:05 2006"
+	case "UnixDate":
+		return "Mon Jan _2 15:04:05 MST 2006"
+	case "RubyDate":
+		return "Mon Jan 02 15:04:05 -0700 2006"
+	case "RFC822":
+		return "02 Jan 06 15:04 MST"
+	case "RFC822Z":
+		return "02 Jan 06 15:04 -0700"
+	case "RFC850":
+		return "Monday, 02-Jan-06 15:04:05 MST"
+	case "RFC1123":
+		return "Mon, 02 Jan 2006 15:04:05 MST"
+	case "RFC1123Z":
+		return "Mon, 02 Jan 2006 15:04:05 -0700"
+	case "RFC3339":
+		return "2006-01-02T15:04:05Z07:00"
+	case "RFC3339Nano":
+		return "2006-01-02T15:04:05.999999999Z07:00"
+	case "Kitchen":
+		return "3:04PM"
 	}
 	return str
 }
 
-
 func dateStrParse(str string) time.Time {
-	t,e := dateparse.ParseLocal(str)
+	t, e := dateparse.ParseLocal(str)
 	if e != nil {
 		panic(e)
 	}
@@ -199,46 +210,45 @@ func Date(input interface{}) time.Time {
 
 	if TypesCheck(input, "int") {
 		tn := int64(input.(int))
-   		return time.Unix(tn / 1000, tn % 1000 *int64(time.Millisecond))
+		return time.Unix(tn/1000, tn%1000*int64(time.Millisecond))
 	}
 
 	if TypesCheck(input, "array") {
 		tm := ArrayToMap(input.([]interface{}))
 		year := Ternary(tm[0] == nil, time.Now().Year(), tm[0]).(int)
-		month:= Ternary(tm[1] == nil, int(time.Now().Month()), tm[1]).(int)
-		day:= Ternary(tm[2] == nil, time.Now().Day(), tm[2]).(int)
-		hour:= Ternary(tm[3] == nil, time.Now().Hour(), tm[3]).(int)
-		minute:= Ternary(tm[4] == nil, time.Now().Minute(), tm[4]).(int)
-		second:= Ternary(tm[5] == nil, time.Now().Second(), tm[5]).(int)
+		month := Ternary(tm[1] == nil, int(time.Now().Month()), tm[1]).(int)
+		day := Ternary(tm[2] == nil, time.Now().Day(), tm[2]).(int)
+		hour := Ternary(tm[3] == nil, time.Now().Hour(), tm[3]).(int)
+		minute := Ternary(tm[4] == nil, time.Now().Minute(), tm[4]).(int)
+		second := Ternary(tm[5] == nil, time.Now().Second(), tm[5]).(int)
 		nanosecond := Ternary(tm[6] == nil, time.Now().Nanosecond(), tm[6]).(int)
 		loc := Ternary(tm[7] == nil, time.Now().Location(), tm[7]).(*time.Location)
-		return time.Date(year,time.Month(month),day,hour,minute,second,nanosecond,loc)
+		return time.Date(year, time.Month(month), day, hour, minute, second, nanosecond, loc)
 	}
 
 	if TypesCheck(input, "map") {
-		tm := input.(map[string] interface{})
+		tm := input.(map[string]interface{})
 		year := Ternary(tm["year"] == nil, time.Now().Year(), tm["year"]).(int)
-		month:= Ternary(tm["month"] == nil, int(time.Now().Month()), tm["month"]).(int)
-		day:= Ternary(tm["day"] == nil, time.Now().Day(), tm["day"]).(int)
-		hour:= Ternary(tm["hour"] == nil, time.Now().Hour(), tm["hour"]).(int)
-		minute:= Ternary(tm["minute"] == nil, time.Now().Minute(), tm["minute"]).(int)
-		second:= Ternary(tm["second"] == nil, time.Now().Second(), tm["second"]).(int)
+		month := Ternary(tm["month"] == nil, int(time.Now().Month()), tm["month"]).(int)
+		day := Ternary(tm["day"] == nil, time.Now().Day(), tm["day"]).(int)
+		hour := Ternary(tm["hour"] == nil, time.Now().Hour(), tm["hour"]).(int)
+		minute := Ternary(tm["minute"] == nil, time.Now().Minute(), tm["minute"]).(int)
+		second := Ternary(tm["second"] == nil, time.Now().Second(), tm["second"]).(int)
 		nanosecond := Ternary(tm["nanosecond"] == nil, time.Now().Nanosecond(), tm["nanosecond"]).(int)
 		loc := Ternary(tm["loc"] == nil, time.Now().Location(), tm["loc"]).(*time.Location)
-		return time.Date(year,time.Month(month),day,hour,minute,second,nanosecond,loc)
+		return time.Date(year, time.Month(month), day, hour, minute, second, nanosecond, loc)
 	}
-	
+
 	if TypesCheck(input, "str") {
-		return dateStrParse(input.(string));
+		return dateStrParse(input.(string))
 	}
 
 	panic("unable to convert to Date")
 }
 
-
 // plain	   = "2020-04-09-06-05-45"
 //
-// ANSIC       = "Mon Jan _2 15:04:05 2006" 
+// ANSIC       = "Mon Jan _2 15:04:05 2006"
 //
 // UnixDate    = "Mon Jan _2 15:04:05 MST 2006"
 //
@@ -289,16 +299,16 @@ func DateAdd(diffThenDate ...interface{}) time.Time {
 	diff["second"] = Ternary(diff["second"] != nil, diff["second"], 0)
 	diff["nanosecond"] = Ternary(diff["nanosecond"] != nil, diff["nanosecond"], 0)
 
-	return date.Local().AddDate(diff["year"].(int),diff["month"].(int),diff["day"].(int)).Add(
-		time.Hour * time.Duration(diff["hour"].(int)) +
-		time.Minute * time.Duration(diff["minute"].(int)) +
-		time.Second * time.Duration(diff["second"].(int)) + 
-		time.Nanosecond * time.Duration(diff["nanosecond"].(int)))
+	return date.Local().AddDate(diff["year"].(int), diff["month"].(int), diff["day"].(int)).Add(
+		time.Hour*time.Duration(diff["hour"].(int)) +
+			time.Minute*time.Duration(diff["minute"].(int)) +
+			time.Second*time.Duration(diff["second"].(int)) +
+			time.Nanosecond*time.Duration(diff["nanosecond"].(int)))
 }
 
 func MapGet(aSet map[string]interface{}, keys ...string) map[string]interface{} {
 	aMap := make(map[string]interface{})
-	for _ , v := range keys {
+	for _, v := range keys {
 		aMap[v] = aSet[v]
 	}
 	return aMap
@@ -306,23 +316,23 @@ func MapGet(aSet map[string]interface{}, keys ...string) map[string]interface{} 
 
 func MapKeys(aSet map[string]interface{}) []string {
 	keys := make([]string, 0, len(aSet))
-    for k := range aSet {
-        keys = append(keys, k)
-    }
+	for k := range aSet {
+		keys = append(keys, k)
+	}
 	return keys
 }
 
 func MapValues(aSet map[string]interface{}) []interface{} {
 	values := make([]interface{}, 0, len(aSet))
 	for v := range aSet {
-        values = append(values, aSet[v])
-    }
+		values = append(values, aSet[v])
+	}
 	return values
 }
 
-func MapGetExist(aSet map[string]interface{}, keys...string) map[string]interface{} {
+func MapGetExist(aSet map[string]interface{}, keys ...string) map[string]interface{} {
 	aMap := make(map[string]interface{})
-	for _ , v := range keys {
+	for _, v := range keys {
 		if aSet[v] != nil {
 			aMap[v] = aSet[v]
 		}
@@ -345,13 +355,13 @@ func MapGetPath(aSet map[string]interface{}, patharrThenFallback ...interface{})
 
 	last := ArrayPopRight(&patharr)
 	value := aSet
-	for _, v := range patharr{	
-		va:= v.(string)
-		if MapHas(value , va) && TypesCheck(value[va],"map") {
+	for _, v := range patharr {
+		va := v.(string)
+		if MapHas(value, va) && TypesCheck(value[va], "map") {
 			value = value[va].(map[string]interface{})
-		}else {
+		} else {
 			return fallback
-		}	
+		}
 	}
 
 	if MapHas(value, last.(string)) {
@@ -370,25 +380,25 @@ func JsonToString(aSetThenSpace ...interface{}) (string, error) {
 		space = sts[1].(string)
 	}
 
-	bytes, err := json.MarshalIndent(aSet,"",space)
-    if err != nil {
-        return "" , err
-    }
+	bytes, err := json.MarshalIndent(aSet, "", space)
+	if err != nil {
+		return "", err
+	}
 
 	return string(bytes), nil
 }
 
-func StringToJson(str string) (map[string]interface{} ,error) {
-    rawIn := json.RawMessage(str)
-    bytes, err := rawIn.MarshalJSON()
+func StringToJson(str string) (map[string]interface{}, error) {
+	rawIn := json.RawMessage(str)
+	bytes, err := rawIn.MarshalJSON()
 	empty := make(map[string]interface{})
-    if err != nil {
-        return empty , err
-    }
+	if err != nil {
+		return empty, err
+	}
 	var result map[string]interface{}
-    err  = json.Unmarshal(bytes, &result)
-    if err != nil {
-		return empty , err
-    }
+	err = json.Unmarshal(bytes, &result)
+	if err != nil {
+		return empty, err
+	}
 	return result, nil
 }
