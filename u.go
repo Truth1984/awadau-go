@@ -46,6 +46,9 @@ func Array(item ...interface{}) []interface{} {
 
 func Map(keyThenValue ...interface{}) map[string]interface{} {
 	aMap := make(map[string]interface{})
+	if len(keyThenValue)%2 != 0 {
+		panic("Map() requires an even number of arguments")
+	}
 	for i := 0; i < len(keyThenValue); i += 2 {
 		aMap[ToString(keyThenValue[i])] = keyThenValue[i+1]
 	}
