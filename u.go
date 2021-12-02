@@ -116,6 +116,13 @@ func ArrayPopLeft(array *[]interface{}) interface{} {
 	return shift
 }
 
+func ArrayDelete(array *[]interface{}, index int) {
+	if index < 0 || index >= len(*array) {
+		return
+	}
+	*array = append((*array)[:index], (*array)[index+1:]...)
+}
+
 // END = length
 func ArrayExtract(array []interface{}, startThenEnd ...interface{}) []interface{} {
 	args := CP2M(startThenEnd)
@@ -443,6 +450,13 @@ func MapMergeDeep(sets ...map[string]interface{}) map[string]interface{} {
 		}
 	}
 	return aMap
+}
+
+func MapDelete(aSet map[string]interface{}, keys ...string) map[string]interface{} {
+	for _, v := range keys {
+		delete(aSet, v)
+	}
+	return aSet
 }
 
 func MapEqual(a, b map[string]interface{}) bool {

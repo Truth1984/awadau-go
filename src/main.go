@@ -3,7 +3,7 @@ package main
 import u "github.com/Truth1984/awadau-go"
 
 func main() {
-	t4()
+	t5()
 }
 
 func t1() {
@@ -24,4 +24,9 @@ func t3() {
 
 func t4() {
 	u.Print(u.ToInt(1.1), u.ToInt(2), u.ToInt("3"), u.ToInt(u.Map("n", 4)["n"]))
+}
+
+func t5() {
+	amap := u.Map("a", nil)
+	u.Print(amap["a"] == nil)
 }
