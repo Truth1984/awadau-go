@@ -470,18 +470,12 @@ func JsonToString(aSetThenSpace ...interface{}) (string, error) {
 }
 
 func StringToJson(str string) (map[string]interface{}, error) {
-	rawIn := json.RawMessage(str)
-	bytes, err := rawIn.MarshalJSON()
-	empty := make(map[string]interface{})
+	var aMap map[string]interface{}
+	err := json.Unmarshal([]byte(str), &aMap)
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
-	var result map[string]interface{}
-	err = json.Unmarshal(bytes, &result)
-	if err != nil {
-		return empty, err
-	}
-	return result, nil
+	return aMap, nil
 }
 
 func StringContains(str string, substr string) bool {
