@@ -3,7 +3,7 @@ package main
 import u "github.com/Truth1984/awadau-go"
 
 func main() {
-	t5()
+	t6()
 }
 
 func t1() {
@@ -29,4 +29,8 @@ func t4() {
 func t5() {
 	amap := u.Map("a", nil)
 	u.Print(amap["a"] == nil)
+}
+
+func t6() {
+	u.Print(u.JsonToString(u.Map("a", 23), ""))
 }

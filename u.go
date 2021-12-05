@@ -494,6 +494,14 @@ func JsonToString(aSetThenSpace ...interface{}) (string, error) {
 		space = sts[1].(string)
 	}
 
+	if space == "" {
+		bytes, err := json.Marshal(aSet)
+		if err != nil {
+			return "", err
+		}
+		return string(bytes), nil
+	}
+
 	bytes, err := json.MarshalIndent(aSet, "", space)
 	if err != nil {
 		return "", err
