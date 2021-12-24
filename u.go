@@ -519,6 +519,10 @@ func StringToJson(str string) (map[string]interface{}, error) {
 	return aMap, nil
 }
 
+func StringToArray(str string, sep string) []string {
+	return strings.Split(str, sep)
+}
+
 func StringContains(str string, substr string) bool {
 	return strings.Contains(str, substr)
 }
