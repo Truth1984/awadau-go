@@ -2,10 +2,14 @@ package main
 
 import u "github.com/Truth1984/awadau-go"
 
+type User struct {
+	Name string
+	Age  int
+}
+
 func main() {
-	data, e := u.FetchGet("example.com", nil)
-	if e != nil {
-		panic(e)
-	}
-	u.Print(data)
+	amap := u.Map("Name", "Arron")
+	user := User{}
+	u.MapToStruct(amap, &user)
+	u.Print(user)
 }

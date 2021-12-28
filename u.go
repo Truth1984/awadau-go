@@ -67,6 +67,21 @@ func Map(keyThenValue ...interface{}) map[string]interface{} {
 	return aMap
 }
 
+func MapToStruct(aMap map[string]interface{}, aStruct interface{}) error {
+	aValue := reflect.ValueOf(aStruct)
+	if aValue.Kind() != reflect.Ptr {
+		return errors.New("MapToStruct() requires a pointer to a struct")
+	}
+	aValue = aValue.Elem()
+	if aValue.Kind() != reflect.Struct {
+		return errors.New("MapToStruct() requires a pointer to a struct")
+	}
+	for key, value := range aMap {
+		aValue.FieldByName(key).Set(reflect.ValueOf(value))
+	}
+	return nil
+}
+
 func ArrayAdd(item ...interface{}) []interface{} {
 	return append(item[:0:0], item...)
 }
