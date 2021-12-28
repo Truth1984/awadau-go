@@ -13,8 +13,10 @@ func main() {
 	amap := u.Map("Name", "Arron", "Age", 27, "c", 16)
 
 	user := User{}
-	err := u.MapToStructHandled(amap, &user)
-	u.Print(user, err)
+	u.MapToStructHandled(amap, &user)
+
+	val, err := u.StructToMap(&user)
+	u.Print(err, val)
 }
 
 func t2() {

@@ -502,6 +502,18 @@ func structPointerCheck(aStruct interface{}) (reflect.Value, error) {
 	return aValue, nil
 }
 
+func StructToMap(aStruct interface{}) (map[string]interface{}, error) {
+	aValue, err := structPointerCheck(aStruct)
+	if err != nil {
+		return nil, err
+	}
+	aMap := make(map[string]interface{})
+	for i := 0; i < aValue.NumField(); i++ {
+		aMap[aValue.Type().Field(i).Name] = aValue.Field(i).Interface()
+	}
+	return aMap, nil
+}
+
 func Serialize(aMap map[string]interface{}) string {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
