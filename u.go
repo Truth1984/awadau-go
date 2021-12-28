@@ -86,21 +86,6 @@ func Map(keyThenValue ...interface{}) map[string]interface{} {
 	return aMap
 }
 
-func MapToStruct(aMap map[string]interface{}, aStruct interface{}) error {
-	aValue := reflect.ValueOf(aStruct)
-	if aValue.Kind() != reflect.Ptr {
-		return errors.New("MapToStruct() requires a pointer to a struct")
-	}
-	aValue = aValue.Elem()
-	if aValue.Kind() != reflect.Struct {
-		return errors.New("MapToStruct() requires a pointer to a struct")
-	}
-	for key, value := range aMap {
-		aValue.FieldByName(key).Set(reflect.ValueOf(value))
-	}
-	return nil
-}
-
 func ArrayAdd(item ...interface{}) []interface{} {
 	return append(item[:0:0], item...)
 }
@@ -478,6 +463,45 @@ func MapEqual(a, b map[string]interface{}) bool {
 	return reflect.DeepEqual(a, b)
 }
 
+func MapToStruct(aMap map[string]interface{}, aStruct interface{}) error {
+	aValue, err := structPointerCheck(aStruct)
+	if err != nil {
+		return err
+	}
+	for key, value := range aMap {
+		if aValue.FieldByName(key).IsValid() {
+			aValue.FieldByName(key).Set(reflect.ValueOf(value))
+		}
+	}
+	return nil
+}
+
+func MapToStructHandled(aMap map[string]interface{}, aStruct interface{}) error {
+	structPointerCheck(aStruct)
+	buf := new(bytes.Buffer)
+	err := json.NewEncoder(buf).Encode(aMap)
+	if err != nil {
+		return err
+	}
+	err = json.NewDecoder(buf).Decode(aStruct)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func structPointerCheck(aStruct interface{}) (reflect.Value, error) {
+	aValue := reflect.ValueOf(aStruct)
+	if aValue.Kind() != reflect.Ptr {
+		return reflect.Value{}, errors.New("aStruct requires a pointer to a struct")
+	}
+	aValue = aValue.Elem()
+	if aValue.Kind() != reflect.Struct {
+		return reflect.Value{}, errors.New("aStruct requires a pointer to a struct")
+	}
+	return aValue, nil
+}
+
 func Serialize(aMap map[string]interface{}) string {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
@@ -532,6 +556,10 @@ func StringToJson(str string) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return aMap, nil
+}
+
+func StringToStruct(str string, aStruct interface{}) error {
+	return json.Unmarshal([]byte(str), aStruct)
 }
 
 func StringToArray(str string, sep string) []string {

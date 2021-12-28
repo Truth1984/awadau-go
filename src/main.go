@@ -8,10 +8,13 @@ type User struct {
 }
 
 func main() {
-	amap := u.Map("Name", "Arron")
+	// age := float64(24)
+	// amap := u.Map("Name", "Arron", "Age", 12)
+	amap := u.Map("Name", "Arron", "Age", 27, "c", 16)
+
 	user := User{}
-	u.MapToStruct(amap, &user)
-	u.Print(user)
+	err := u.MapToStructHandled(amap, &user)
+	u.Print(user, err)
 }
 
 func t2() {
