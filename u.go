@@ -41,6 +41,25 @@ func ATI(array interface{}) []interface{} {
 	return result
 }
 
+func ToFloat64(item interface{}) float64 {
+	switch Types(item) {
+	case "float64":
+		return item.(float64)
+	case "int":
+		return float64(item.(int))
+	case "int64":
+		return float64(item.(int64))
+	case "string":
+		f, _ := strconv.ParseFloat(item.(string), 64)
+		return f
+	}
+	return 0
+}
+
+func ToInt(item interface{}) int {
+	return int(ToFloat64(item))
+}
+
 // map to interface
 func MTI(amap interface{}) map[string]interface{} {
 	dict := reflect.ValueOf(amap)
@@ -110,6 +129,13 @@ func ArrayPopLeft(array *[]interface{}) interface{} {
 	shift := (*array)[0]
 	(*array) = (*array)[1:]
 	return shift
+}
+
+func ArrayDelete(array *[]interface{}, index int) {
+	if index < 0 || index >= len(*array) {
+		return
+	}
+	*array = append((*array)[:index], (*array)[index+1:]...)
 }
 
 // END = length
@@ -441,6 +467,13 @@ func MapMergeDeep(sets ...map[string]interface{}) map[string]interface{} {
 	return aMap
 }
 
+func MapDelete(aSet map[string]interface{}, keys ...string) map[string]interface{} {
+	for _, v := range keys {
+		delete(aSet, v)
+	}
+	return aSet
+}
+
 func MapEqual(a, b map[string]interface{}) bool {
 	return reflect.DeepEqual(a, b)
 }
@@ -476,6 +509,14 @@ func JsonToString(aSetThenSpace ...interface{}) (string, error) {
 		space = sts[1].(string)
 	}
 
+	if space == "" {
+		bytes, err := json.Marshal(aSet)
+		if err != nil {
+			return "", err
+		}
+		return string(bytes), nil
+	}
+
 	bytes, err := json.MarshalIndent(aSet, "", space)
 	if err != nil {
 		return "", err
@@ -485,18 +526,16 @@ func JsonToString(aSetThenSpace ...interface{}) (string, error) {
 }
 
 func StringToJson(str string) (map[string]interface{}, error) {
-	rawIn := json.RawMessage(str)
-	bytes, err := rawIn.MarshalJSON()
-	empty := make(map[string]interface{})
+	var aMap map[string]interface{}
+	err := json.Unmarshal([]byte(str), &aMap)
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
-	var result map[string]interface{}
-	err = json.Unmarshal(bytes, &result)
-	if err != nil {
-		return empty, err
-	}
-	return result, nil
+	return aMap, nil
+}
+
+func StringToArray(str string, sep string) []string {
+	return strings.Split(str, sep)
 }
 
 func StringContains(str string, substr string) bool {
